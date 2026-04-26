@@ -261,8 +261,15 @@ class Guardrails:
             return
         
         # Check for sudden large changes
-        current_cards = set(getattr(current_state, 'board_cards', []))
-        previous_cards = set(getattr(previous_state, 'board_cards', []))
+        # Use card short_name for hashing (string representation)
+        current_cards = set(
+            c.short_name if hasattr(c, 'short_name') else str(c)
+            for c in getattr(current_state, 'board_cards', [])
+        )
+        previous_cards = set(
+            c.short_name if hasattr(c, 'short_name') else str(c)
+            for c in getattr(previous_state, 'board_cards', [])
+        )
         
         # Cards should not disappear suddenly
         removed_cards = previous_cards - current_cards
