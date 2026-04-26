@@ -1,0 +1,427 @@
+OpenBLAS WARNING - could not determine the L2 cache size on this system, assuming 256k
+OpenBLAS WARNING - could not determine the L2 cache size on this system, assuming 256k
+2026-04-26 12:16:19,411 - vision.table_calibration - INFO - TableCalibrator initialized with default layout: 6max_standard
+2026-04-26 12:16:19,411 - vision.table_calibration - INFO - Initialized layout from template: 6max_standard
+2026-04-26 12:16:19,411 - vision.table_calibration - INFO - Initialized layout from template: 9max_standard
+2026-04-26 12:16:19,411 - vision.yolo_detector - INFO - Using mock YOLO detector (no real inference)
+2026-04-26 12:16:19,411 - vision.yolo_detector - INFO - YOLODetector initialized on device: cpu
+2026-04-26 12:16:26,371 - vision.card_classifier - INFO - Using mock card classifier (heuristic-based)
+2026-04-26 12:16:26,371 - vision.card_classifier - INFO - CardClassifier initialized on device: cpu
+2026-04-26 12:16:26,373 - vision.tracker - INFO - Tracker initialized (max_tracks=50)
+2026-04-26 12:16:26,373 - vision.tracker - DEBUG - Created track 0 for card
+2026-04-26 12:16:26,373 - vision.tracker - DEBUG - Created track 1 for card
+2026-04-26 12:16:26,384 - vision.fusion - INFO - FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+2026-04-26 12:16:26,384 - vision.state_machine - INFO - StateMachine initialized (max_players=9)
+2026-04-26 12:16:26,384 - vision.guardrails - INFO - Guardrails system initialized
+2026-04-26 12:16:26,385 - vision.yolo_detector - INFO - Using mock YOLO detector (no real inference)
+2026-04-26 12:16:26,385 - vision.yolo_detector - INFO - YOLODetector initialized on device: cpu
+2026-04-26 12:16:26,385 - vision.card_classifier - INFO - Using mock card classifier (heuristic-based)
+2026-04-26 12:16:26,385 - vision.card_classifier - INFO - CardClassifier initialized on device: cpu
+2026-04-26 12:16:26,385 - vision.tracker - INFO - Tracker initialized (max_tracks=100)
+2026-04-26 12:16:26,385 - vision.fusion - INFO - FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+2026-04-26 12:16:26,385 - vision.state_machine - INFO - StateMachine initialized (max_players=9)
+2026-04-26 12:16:26,385 - vision.guardrails - INFO - Guardrails system initialized
+2026-04-26 12:16:26,385 - vision.table_calibration - INFO - TableCalibrator initialized with default layout: 6max_standard
+2026-04-26 12:16:26,385 - vision.pipeline - INFO - PokerVisionPipeline initialized
+2026-04-26 12:16:26,391 - vision.table_calibration - INFO - Performing table calibration...
+2026-04-26 12:16:26,391 - vision.table_calibration - INFO - Initialized layout from template: 6max_standard
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 0 for chip
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 1 for chip
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 2 for chip
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 3 for chip
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 4 for chip
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 5 for chip
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 6 for chip
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 7 for chip
+2026-04-26 12:16:28,666 - vision.tracker - DEBUG - Created track 8 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 9 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 10 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 11 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 12 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 13 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 14 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 15 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 16 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 17 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 18 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 19 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 20 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 21 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 22 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 23 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 24 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 25 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 26 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 27 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 28 for chip
+2026-04-26 12:16:28,667 - vision.tracker - DEBUG - Created track 29 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 30 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 31 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 32 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 33 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 34 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 35 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 36 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 37 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 38 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 39 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 40 for chip
+2026-04-26 12:16:28,668 - vision.tracker - DEBUG - Created track 41 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 42 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 43 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 44 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 45 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 46 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 47 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 48 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 49 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 50 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 51 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 52 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 53 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 54 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 55 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 56 for chip
+2026-04-26 12:16:28,669 - vision.tracker - DEBUG - Created track 57 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 58 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 59 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 60 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 61 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 62 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 63 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 64 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 65 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 66 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 67 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 68 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 69 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 70 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 71 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 72 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 73 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 74 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 75 for chip
+2026-04-26 12:16:28,670 - vision.tracker - DEBUG - Created track 76 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 77 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 78 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 79 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 80 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 81 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 82 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 83 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 84 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 85 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 86 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 87 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 88 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 89 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 90 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 91 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 92 for chip
+2026-04-26 12:16:28,671 - vision.tracker - DEBUG - Created track 93 for chip
+2026-04-26 12:16:28,683 - vision.tracker - DEBUG - Created track 94 for chip
+2026-04-26 12:16:28,683 - vision.tracker - DEBUG - Created track 95 for chip
+2026-04-26 12:16:28,683 - vision.tracker - DEBUG - Created track 96 for chip
+2026-04-26 12:16:28,683 - vision.tracker - DEBUG - Created track 97 for chip
+2026-04-26 12:16:28,683 - vision.tracker - DEBUG - Created track 98 for chip
+2026-04-26 12:16:28,683 - vision.tracker - DEBUG - Created track 99 for chip
+2026-04-26 12:16:28,889 - vision.pipeline - DEBUG - Frame processing slow: 2498.6ms
+2026-04-26 12:16:28,890 - vision.pipeline - DEBUG - Frame 1: 1136 detections, 0 cards, processing time: 2498.6ms, FPS: 0.4
+2026-04-26 12:16:32,569 - vision.pipeline - DEBUG - Frame processing slow: 3678.7ms
+2026-04-26 12:16:32,569 - vision.pipeline - DEBUG - Frame 2: 1136 detections, 0 cards, processing time: 3678.7ms, FPS: 0.3
+2026-04-26 12:16:36,349 - vision.pipeline - DEBUG - Frame processing slow: 3779.9ms
+2026-04-26 12:16:36,349 - vision.pipeline - DEBUG - Frame 3: 1136 detections, 0 cards, processing time: 3779.9ms, FPS: 0.3
+2026-04-26 12:16:39,923 - vision.pipeline - DEBUG - Frame processing slow: 3574.0ms
+2026-04-26 12:16:39,924 - vision.pipeline - DEBUG - Frame 4: 1136 detections, 0 cards, processing time: 3574.0ms, FPS: 0.3
+2026-04-26 12:16:43,507 - vision.pipeline - DEBUG - Frame processing slow: 3583.5ms
+2026-04-26 12:16:43,508 - vision.pipeline - DEBUG - Frame 5: 1136 detections, 0 cards, processing time: 3583.5ms, FPS: 0.3
+2026-04-26 12:16:47,243 - vision.pipeline - DEBUG - Frame processing slow: 3734.9ms
+2026-04-26 12:16:47,243 - vision.pipeline - DEBUG - Frame 6: 1136 detections, 0 cards, processing time: 3734.9ms, FPS: 0.3
+2026-04-26 12:16:50,870 - vision.pipeline - DEBUG - Frame processing slow: 3626.7ms
+2026-04-26 12:16:50,870 - vision.pipeline - DEBUG - Frame 7: 1136 detections, 0 cards, processing time: 3626.7ms, FPS: 0.3
+2026-04-26 12:16:54,607 - vision.pipeline - DEBUG - Frame processing slow: 3725.2ms
+2026-04-26 12:16:54,607 - vision.pipeline - DEBUG - Frame 8: 1136 detections, 0 cards, processing time: 3725.2ms, FPS: 0.3
+2026-04-26 12:16:58,227 - vision.pipeline - DEBUG - Frame processing slow: 3619.3ms
+2026-04-26 12:16:58,227 - vision.pipeline - DEBUG - Frame 9: 1136 detections, 0 cards, processing time: 3619.3ms, FPS: 0.3
+2026-04-26 12:17:01,984 - vision.pipeline - DEBUG - Frame processing slow: 3757.0ms
+2026-04-26 12:17:01,984 - vision.pipeline - DEBUG - Frame 10: 1136 detections, 0 cards, processing time: 3757.0ms, FPS: 0.3
+2026-04-26 12:17:05,604 - vision.pipeline - DEBUG - Frame processing slow: 3619.4ms
+2026-04-26 12:17:05,604 - vision.pipeline - DEBUG - Frame 11: 1136 detections, 0 cards, processing time: 3619.4ms, FPS: 0.3
+2026-04-26 12:17:05,608 - vision.tracker - INFO - Tracker reset
+2026-04-26 12:17:05,608 - vision.state_machine - INFO - StateMachine reset
+2026-04-26 12:17:05,608 - vision.guardrails - INFO - Guardrails reset
+2026-04-26 12:17:05,608 - vision.table_calibration - INFO - Table calibration reset
+2026-04-26 12:17:05,608 - vision.pipeline - INFO - Pipeline reset
+2026-04-26 12:17:05,609 - vision.yolo_detector - INFO - Using mock YOLO detector (no real inference)
+2026-04-26 12:17:05,609 - vision.yolo_detector - INFO - YOLODetector initialized on device: cpu
+2026-04-26 12:17:05,609 - vision.card_classifier - INFO - Using mock card classifier (heuristic-based)
+2026-04-26 12:17:05,609 - vision.card_classifier - INFO - CardClassifier initialized on device: cpu
+2026-04-26 12:17:05,609 - vision.tracker - INFO - Tracker initialized (max_tracks=100)
+2026-04-26 12:17:05,609 - vision.fusion - INFO - FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+2026-04-26 12:17:05,609 - vision.state_machine - INFO - StateMachine initialized (max_players=9)
+2026-04-26 12:17:05,609 - vision.guardrails - INFO - Guardrails system initialized
+2026-04-26 12:17:05,609 - vision.table_calibration - INFO - TableCalibrator initialized with default layout: 6max_standard
+2026-04-26 12:17:05,609 - vision.pipeline - INFO - PokerVisionPipeline initialized
+2026-04-26 12:17:05,710 - vision.table_calibration - INFO - Performing table calibration...
+2026-04-26 12:17:05,710 - vision.table_calibration - INFO - Initialized layout from template: 6max_standard
+2026-04-26 12:17:05,986 - vision.tracker - DEBUG - Created track 0 for card
+2026-04-26 12:17:05,986 - vision.tracker - DEBUG - Created track 1 for card
+2026-04-26 12:17:05,986 - vision.tracker - DEBUG - Created track 2 for card
+2026-04-26 12:17:05,986 - vision.tracker - DEBUG - Created track 3 for card
+2026-04-26 12:17:05,986 - vision.tracker - DEBUG - Created track 4 for card
+2026-04-26 12:17:05,986 - vision.tracker - DEBUG - Created track 5 for card
+2026-04-26 12:17:05,986 - vision.tracker - DEBUG - Created track 6 for chip
+2026-04-26 12:17:05,986 - vision.tracker - DEBUG - Created track 7 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 8 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 9 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 10 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 11 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 12 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 13 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 14 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 15 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 16 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 17 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 18 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 19 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 20 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 21 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 22 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 23 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 24 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 25 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 26 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 27 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 28 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 29 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 30 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 31 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 32 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 33 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 34 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 35 for chip
+2026-04-26 12:17:05,987 - vision.tracker - DEBUG - Created track 36 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 37 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 38 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 39 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 40 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 41 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 42 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 43 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 44 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 45 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 46 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 47 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 48 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 49 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 50 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 51 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 52 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 53 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 54 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 55 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 56 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 57 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 58 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 59 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 60 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 61 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 62 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 63 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 64 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 65 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 66 for chip
+2026-04-26 12:17:05,988 - vision.tracker - DEBUG - Created track 67 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 68 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 69 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 70 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 71 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 72 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 73 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 74 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 75 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 76 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 77 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 78 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 79 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 80 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 81 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 82 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 83 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 84 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 85 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 86 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 87 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 88 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 89 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 90 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 91 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 92 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 93 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 94 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 95 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 96 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 97 for chip
+2026-04-26 12:17:05,989 - vision.tracker - DEBUG - Created track 98 for chip
+2026-04-26 12:17:05,990 - vision.tracker - DEBUG - Created track 99 for chip
+2026-04-26 12:17:06,005 - vision.pipeline - DEBUG - Frame processing slow: 295.2ms
+2026-04-26 12:17:06,529 - vision.tracker - DEBUG - Created track 100 for card
+2026-04-26 12:17:06,530 - vision.tracker - DEBUG - Created track 101 for card
+2026-04-26 12:17:06,530 - vision.tracker - DEBUG - Created track 102 for card
+2026-04-26 12:17:06,530 - vision.tracker - DEBUG - Created track 103 for chip
+2026-04-26 12:17:06,530 - vision.tracker - DEBUG - Created track 104 for chip
+2026-04-26 12:17:06,530 - vision.tracker - DEBUG - Created track 105 for chip
+2026-04-26 12:17:06,531 - vision.tracker - DEBUG - Created track 106 for chip
+2026-04-26 12:17:06,531 - vision.tracker - DEBUG - Created track 107 for chip
+2026-04-26 12:17:06,531 - vision.tracker - DEBUG - Created track 108 for chip
+2026-04-26 12:17:06,531 - vision.tracker - DEBUG - Created track 109 for chip
+2026-04-26 12:17:06,531 - vision.tracker - DEBUG - Created track 110 for chip
+2026-04-26 12:17:06,531 - vision.tracker - DEBUG - Created track 111 for chip
+2026-04-26 12:17:06,546 - vision.pipeline - DEBUG - Frame processing slow: 241.7ms
+2026-04-26 12:17:07,088 - vision.tracker - DEBUG - Created track 112 for chip
+2026-04-26 12:17:07,088 - vision.tracker - DEBUG - Created track 113 for chip
+2026-04-26 12:17:07,088 - vision.tracker - DEBUG - Created track 114 for chip
+2026-04-26 12:17:07,091 - vision.pipeline - WARNING - Guardrails triggered rollback
+2026-04-26 12:17:07,091 - vision.state_machine - INFO - Rolled back 1 state(s)
+2026-04-26 12:17:07,091 - vision.pipeline - DEBUG - Frame processing slow: 224.9ms
+
+======================================================================
+POKER VISION PIPELINE - TEST SUITE
+======================================================================
+
+============================================================
+Testing Table Calibration
+============================================================
+  ✓ Calibrator initialized
+  ✓ Layout initialized: 6 seats
+  ✓ Normalized coordinates valid
+  ✓ Pixel conversion works: (192, 162, 1728, 918)
+  ✓ Adaptive ROI for 'card': (768, 378, 1152, 540)
+  ✓ Point (0.5, 0.45) -> board
+  ✓ Layout serialization works
+  ✓ 9max layout: 9 seats
+  ✓ Calibration stats: {'calibration_count': 2, 'frames_since_calibration': 0, 'current_confidence': 1.0, 'avg_confidence': 0.0, 'layout_version': 1, 'num_seats': 9}
+  ✓ Table Calibration tests passed
+
+============================================================
+Testing YOLO Detector
+============================================================
+  Detections found: 1120
+    - chip: bbox=(88, 410, 186, 508), conf=0.65
+    - chip: bbox=(1061, 552, 1159, 650), conf=0.65
+    - chip: bbox=(913, 393, 1011, 491), conf=0.65
+    - chip: bbox=(123, 184, 221, 282), conf=0.65
+    - chip: bbox=(253, 331, 351, 429), conf=0.65
+  Batch detection: [1120, 1120] detections
+  Model info: device=cpu, use_mock=True
+  ✓ YOLO Detector tests passed
+
+============================================================
+Testing Card Classifier
+============================================================
+  Classification result:
+    Rank: T
+    Suit: spades
+    Rank confidence: 0.40
+    Suit confidence: 0.50
+    Is valid: True
+  Batch classification: 2 results
+  Model info: device=cpu, torch_available=False
+  ✓ Card Classifier tests passed
+
+============================================================
+Testing Tracker
+============================================================
+  Tracks after first update: 2
+    - Track #0: card, frames_seen=1
+    - Track #1: card, frames_seen=1
+  Tracks after second update: 2
+    - Track #0: stable=False, temporal_conf=0.85
+    - Track #1: stable=False, temporal_conf=0.80
+  Tracker stats: total_tracks=2, frame_count=2
+  ✓ Tracker tests passed
+
+============================================================
+Testing Fusion Engine
+============================================================
+  Fused detections: 2
+    - card #1:
+        Detection conf: 0.80
+        Temporal conf: 0.90
+        Fused conf: 0.72
+        Is reliable: True
+    - chip #2:
+        Detection conf: 0.70
+        Temporal conf: 0.76
+        Fused conf: 0.65
+        Is reliable: True
+  Reliable detections after filtering: 2
+  Top card detection: 1 results
+  ✓ Fusion Engine tests passed
+
+============================================================
+Testing State Machine
+============================================================
+  Initial state: street=unknown, cards=0
+  After flop: street=unknown, cards=3
+    Board: ['As', 'Kh', 'Qd']
+  State machine stats: transitions=2, rollbacks=0
+  ✓ State Machine tests passed
+
+============================================================
+Testing Guardrails
+============================================================
+  Validation result: status=valid
+    Checks passed: 6
+    Checks failed: 0
+    Warnings: 0
+    Errors: 0
+    Should rollback: False
+  Should accept unchanged card: True
+  Guardrails stats: validations=1, pass_rate=1.00
+  ✓ Guardrails tests passed
+
+============================================================
+Testing Full Pipeline Integration
+============================================================
+  Frame processed in 2499.2ms
+  FPS: 0.4
+  State: street=unknown, valid=True
+  Pipeline metrics:
+    Frames processed: 11
+    Current FPS: 0.3
+    Avg processing time: 3563.4ms
+  Visualization generated: shape=(720, 1280, 3)
+  Pipeline reset successfully
+  ✓ Full Pipeline tests passed
+
+============================================================
+Testing with Sample Images
+============================================================
+  Found 11 sample images
+  Processing: capture_20260421_045719_971.png
+    State: street=unknown, confidence=0.50
+    Saved visualization: vis_capture_20260421_045719_971.png
+  Processing: capture_20260421_050256_337.png
+    State: street=unknown, confidence=0.65
+    Saved visualization: vis_capture_20260421_050256_337.png
+  Processing: capture_20260421_050237_777.png
+    State: street=unknown, confidence=0.66
+    Saved visualization: vis_capture_20260421_050237_777.png
+  ✓ Sample Image tests completed
+
+======================================================================
+TEST SUMMARY
+======================================================================
+  ✓ Table Calibration: PASS
+  ✓ YOLO Detector: PASS
+  ✓ Card Classifier: PASS
+  ✓ Tracker: PASS
+  ✓ Fusion Engine: PASS
+  ✓ State Machine: PASS
+  ✓ Guardrails: PASS
+  ✓ Full Pipeline: PASS
+  ✓ Sample Images: PASS
+
+  Total: 9 passed, 0 failed out of 9 tests
+======================================================================
