@@ -1,17 +1,10 @@
 ```
-# Compiled Python files
-*.pyc
-__pycache__/
-
-# Dependencies
-.venv/
-venv/
-node_modules/
+# Screenshots
+tests/screenshots/
 
 # Logs and temp files
 *.log
 *.tmp
-*.swp
 
 # Environment
 .env
@@ -21,13 +14,4 @@ node_modules/
 # Editors
 .vscode/
 .idea/
-
-# Coverage reports
-.coverage
-coverage/
-htmlcov/
-
-# Python cache
-.mypy_cache/
-.pytest_cache/
 ```
