@@ -195,28 +195,131 @@ class ExpressoVision:
 
     def _find_window(self, img: np.ndarray) -> Tuple[int, int, int, int]:
         """
-        Localise la fenêtre Winamax en cherchant la barre de titre.
-        Retourne (x, y, w, h) de la zone utile (sans décoration de bureau).
-        Fallback → image entière.
+        Localise la fenêtre Winamax sans OCR.
+        Stratégie (par ordre de priorité) :
+          1. Détection par couleur de la barre de titre Winamax (bleu foncé ~#1a2a4a)
+          2. Fallback par détection du fond de table (tapis vert/feutré caractéristique)
+          3. Fallback final → image entière (0, 0, w, h)
+        
+        Retourne (x, y, w, h) de la zone utile.
+        Robuste aux changements de résolution (1280×720 à 2560×1440) et thèmes de table.
         """
         h, w = img.shape[:2]
-        # Scan la bande supérieure (≤10% de hauteur) pour trouver du texte "Expresso"
-        top_band = img[:int(h * 0.10), :]
-        pil_top = Image.fromarray(cv2.cvtColor(top_band, cv2.COLOR_BGR2RGB))
-        try:
-            data = pytesseract.image_to_data(
-                pil_top, config=self._tess_cfg_free, output_type=pytesseract.Output.DICT
-            )
-            for i, txt in enumerate(data["text"]):
-                if "Expresso" in txt and int(data["conf"][i]) > 40:
-                    # La barre de titre est à data["top"][i]
-                    # La fenêtre utile commence juste en-dessous
-                    title_y = data["top"][i]
-                    title_x = max(0, data["left"][i] - 50)
-                    # Largeur de fenêtre : scan horizontal pour trouver le bord droit
-                    return (title_x, title_y, w - title_x, h - title_y)
-        except Exception:
-            pass
+        logger.debug("Image dimensions: %dx%d", w, h)
+
+        # ── STRATÉGIE 1 : Détection par couleur de la barre de titre ────────────────────
+        # La barre de titre Winamax est bleu foncé (~#1a2a4a en hex, soit BGR: ~#4a2a1a)
+        # En HSV : Hue ~110-130°, Saturation ~80-150, Value ~40-90
+        logger.debug("Stratégie 1: Détection par couleur de la barre de titre")
+        
+        # Convertir en HSV pour une meilleure segmentation couleur
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        
+        # Définir les bornes HSV pour le bleu foncé Winamax
+        # Ajustement: le bleu foncé a un hue autour de 115-125, saturation moyenne, valeur basse
+        lower_blue = np.array([105, 60, 30], dtype=np.uint8)
+        upper_blue = np.array([130, 180, 100], dtype=np.uint8)
+        
+        mask_title = cv2.inRange(hsv, lower_blue, upper_blue)
+        
+        # Chercher une bande horizontale en haut de l'image (dans les 10% supérieurs)
+        top_band_height = max(int(h * 0.05), 20)  # minimum 20px
+        top_band_height = min(top_band_height, int(h * 0.15))  # maximum 15%
+        top_mask = mask_title[:top_band_height, :]
+        
+        # Projection horizontale pour trouver la bande continue
+        horizontal_proj = cv2.reduce(top_mask, 1, cv2.REDUCE_SUM, dtype=cv2.CV_32S).flatten()
+        
+        # Trouver les régions où la projection est significative
+        title_y_start = None
+        title_y_end = None
+        for y in range(top_mask.shape[0]):
+            if int(horizontal_proj[y]) > w * 20:  # Au moins 20 pixels bleus sur la ligne
+                if title_y_start is None:
+                    title_y_start = y
+                title_y_end = y
+        
+        if title_y_start is not None and title_y_end is not None:
+            # Vérifier que la hauteur est cohérente avec une barre de titre (20-40px typiquement)
+            title_height = title_y_end - title_y_start + 1
+            if 15 <= title_height <= 60:  # Tolérance large pour différentes résolutions
+                # Trouver les bords gauche/droit par projection verticale sur la bande détectée
+                title_band = top_mask[title_y_start:title_y_end+1, :]
+                vertical_proj = cv2.reduce(title_band, 0, cv2.REDUCE_SUM, dtype=cv2.CV_32S).flatten()
+                
+                # Trouver le début et la fin de la barre (où il y a suffisamment de pixels)
+                title_x_start = None
+                title_x_end = None
+                threshold = title_height * 5  # Au moins 5 lignes de pixels bleus
+                
+                for x in range(vertical_proj.shape[0]):
+                    if int(vertical_proj[x]) >= threshold:
+                        if title_x_start is None:
+                            title_x_start = x
+                        title_x_end = x
+                
+                if title_x_start is not None and title_x_end is not None:
+                    # Raffiner les bords avec un peu de marge
+                    title_x_start = max(0, title_x_start - 5)
+                    title_x_end = min(w, title_x_end + 5)
+                    
+                    window_w = title_x_end - title_x_start
+                    window_h = h - title_y_start
+                    
+                    logger.debug(
+                        "Barre de titre détectée: x=%d y=%d w=%d h=%d (hauteur barre=%d)",
+                        title_x_start, title_y_start, window_w, window_h, title_height
+                    )
+                    return (title_x_start, title_y_start, window_w, window_h)
+        
+        logger.debug("Stratégie 1 échouée: barre de titre non détectée par couleur")
+
+        # ── STRATÉGIE 2 : Détection du fond de table (tapis vert/feutré) ───────────────
+        # Le tapis Winamax Expresso a une teinte verte caractéristique
+        # En HSV : Hue ~50-70° (vert), Saturation ~40-120, Value ~60-180
+        logger.debug("Stratégie 2: Détection par couleur du tapis de table")
+        
+        # Bornes HSV pour le vert feutré du tapis
+        lower_green = np.array([45, 30, 50], dtype=np.uint8)
+        upper_green = np.array([75, 150, 200], dtype=np.uint8)
+        
+        mask_table = cv2.inRange(hsv, lower_green, upper_green)
+        
+        # Appliquer un nettoyage morphologique pour connecter les régions
+        kernel = np.ones((5, 5), np.uint8)
+        mask_table = cv2.morphologyEx(mask_table, cv2.MORPH_CLOSE, kernel)
+        mask_table = cv2.morphologyEx(mask_table, cv2.MORPH_OPEN, kernel)
+        
+        # Trouver les contours pour identifier la plus grande zone rectangulaire
+        contours, _ = cv2.findContours(mask_table, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if contours:
+            # Trouver le plus grand contour par aire
+            largest_contour = max(contours, key=cv2.contourArea)
+            area = cv2.contourArea(largest_contour)
+            
+            # Seuillage: doit représenter au moins 15% de l'image totale
+            min_area = w * h * 0.15
+            if area >= min_area:
+                # Approximer le contour par un rectangle englobant
+                x, y, table_w, table_h = cv2.boundingRect(largest_contour)
+                
+                # Vérifier que les dimensions sont cohérentes avec une table de poker
+                # La table devrait occuper une portion significative de l'image
+                aspect_ratio = table_w / table_h if table_h > 0 else 0
+                
+                # Aspect ratio typique d'une table de poker: 1.2 à 2.5
+                if 1.0 <= aspect_ratio <= 3.0:
+                    logger.debug(
+                        "Tapis de table détecté: x=%d y=%d w=%d h=%d (aire=%.0f, aspect=%.2f)",
+                        x, y, table_w, table_h, area, aspect_ratio
+                    )
+                    return (x, y, table_w, table_h)
+        
+        logger.debug("Stratégie 2 échouée: tapis de table non détecté")
+
+        # ── STRATÉGIE 3 : Fallback → image entière ─────────────────────────────────────
+        logger.debug("Stratégie 3 (fallback): Retour de l'image entière")
         return (0, 0, w, h)
 
     def _find_board_cards(
