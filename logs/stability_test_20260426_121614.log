@@ -1,0 +1,272 @@
+OpenBLAS WARNING - could not determine the L2 cache size on this system, assuming 256k
+OpenBLAS WARNING - could not determine the L2 cache size on this system, assuming 256k
+INFO:__main__:Found 11 images to test
+INFO:__main__:Testing stability for: tests/screenshots/capture_20260421_045719_971.png
+INFO:__main__:Loaded image: (1056, 1936, 3)
+INFO:vision.yolo_detector:Using mock YOLO detector (no real inference)
+INFO:vision.yolo_detector:YOLODetector initialized on device: cpu
+INFO:vision.card_classifier:Using mock card classifier (heuristic-based)
+INFO:vision.card_classifier:CardClassifier initialized on device: cpu
+INFO:vision.tracker:Tracker initialized (max_tracks=100)
+INFO:vision.fusion:FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+INFO:vision.state_machine:StateMachine initialized (max_players=9)
+INFO:vision.guardrails:Guardrails system initialized
+INFO:vision.table_calibration:TableCalibrator initialized with default layout: 6max_standard
+INFO:vision.pipeline:PokerVisionPipeline initialized
+INFO:__main__:Running stability test: 10 frames
+INFO:vision.table_calibration:Performing table calibration...
+INFO:vision.table_calibration:Initialized layout from template: 6max_standard
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+INFO:__main__:  capture_20260421_045719_971.png: stability=0.95, avg_fps=3.2
+INFO:__main__:Testing stability for: tests/screenshots/capture_20260421_050256_337.png
+INFO:__main__:Loaded image: (1056, 1936, 3)
+INFO:vision.yolo_detector:Using mock YOLO detector (no real inference)
+INFO:vision.yolo_detector:YOLODetector initialized on device: cpu
+INFO:vision.card_classifier:Using mock card classifier (heuristic-based)
+INFO:vision.card_classifier:CardClassifier initialized on device: cpu
+INFO:vision.tracker:Tracker initialized (max_tracks=100)
+INFO:vision.fusion:FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+INFO:vision.state_machine:StateMachine initialized (max_players=9)
+INFO:vision.guardrails:Guardrails system initialized
+INFO:vision.table_calibration:TableCalibrator initialized with default layout: 6max_standard
+INFO:vision.pipeline:PokerVisionPipeline initialized
+INFO:__main__:Running stability test: 10 frames
+INFO:vision.table_calibration:Performing table calibration...
+INFO:vision.table_calibration:Initialized layout from template: 6max_standard
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+INFO:__main__:  capture_20260421_050256_337.png: stability=0.95, avg_fps=4.6
+INFO:__main__:Testing stability for: tests/screenshots/capture_20260421_050237_777.png
+INFO:__main__:Loaded image: (1056, 1936, 3)
+INFO:vision.yolo_detector:Using mock YOLO detector (no real inference)
+INFO:vision.yolo_detector:YOLODetector initialized on device: cpu
+INFO:vision.card_classifier:Using mock card classifier (heuristic-based)
+INFO:vision.card_classifier:CardClassifier initialized on device: cpu
+INFO:vision.tracker:Tracker initialized (max_tracks=100)
+INFO:vision.fusion:FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+INFO:vision.state_machine:StateMachine initialized (max_players=9)
+INFO:vision.guardrails:Guardrails system initialized
+INFO:vision.table_calibration:TableCalibrator initialized with default layout: 6max_standard
+INFO:vision.pipeline:PokerVisionPipeline initialized
+INFO:__main__:Running stability test: 10 frames
+INFO:vision.table_calibration:Performing table calibration...
+INFO:vision.table_calibration:Initialized layout from template: 6max_standard
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+INFO:__main__:  capture_20260421_050237_777.png: stability=0.95, avg_fps=4.3
+INFO:__main__:Testing stability for: tests/screenshots/capture_20260421_045823_380.png
+INFO:__main__:Loaded image: (1056, 1936, 3)
+INFO:vision.yolo_detector:Using mock YOLO detector (no real inference)
+INFO:vision.yolo_detector:YOLODetector initialized on device: cpu
+INFO:vision.card_classifier:Using mock card classifier (heuristic-based)
+INFO:vision.card_classifier:CardClassifier initialized on device: cpu
+INFO:vision.tracker:Tracker initialized (max_tracks=100)
+INFO:vision.fusion:FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+INFO:vision.state_machine:StateMachine initialized (max_players=9)
+INFO:vision.guardrails:Guardrails system initialized
+INFO:vision.table_calibration:TableCalibrator initialized with default layout: 6max_standard
+INFO:vision.pipeline:PokerVisionPipeline initialized
+INFO:__main__:Running stability test: 10 frames
+INFO:vision.table_calibration:Performing table calibration...
+INFO:vision.table_calibration:Initialized layout from template: 6max_standard
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+INFO:__main__:  capture_20260421_045823_380.png: stability=0.95, avg_fps=2.9
+INFO:__main__:Testing stability for: tests/screenshots/capture_20260421_050312_730.png
+INFO:__main__:Loaded image: (1056, 1936, 3)
+INFO:vision.yolo_detector:Using mock YOLO detector (no real inference)
+INFO:vision.yolo_detector:YOLODetector initialized on device: cpu
+INFO:vision.card_classifier:Using mock card classifier (heuristic-based)
+INFO:vision.card_classifier:CardClassifier initialized on device: cpu
+INFO:vision.tracker:Tracker initialized (max_tracks=100)
+INFO:vision.fusion:FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+INFO:vision.state_machine:StateMachine initialized (max_players=9)
+INFO:vision.guardrails:Guardrails system initialized
+INFO:vision.table_calibration:TableCalibrator initialized with default layout: 6max_standard
+INFO:vision.pipeline:PokerVisionPipeline initialized
+INFO:__main__:Running stability test: 10 frames
+INFO:vision.table_calibration:Performing table calibration...
+INFO:vision.table_calibration:Initialized layout from template: 6max_standard
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+INFO:__main__:  capture_20260421_050312_730.png: stability=0.95, avg_fps=3.8
+INFO:__main__:Testing stability for: tests/screenshots/capture_20260421_045943_458.png
+INFO:__main__:Loaded image: (1056, 1936, 3)
+INFO:vision.yolo_detector:Using mock YOLO detector (no real inference)
+INFO:vision.yolo_detector:YOLODetector initialized on device: cpu
+INFO:vision.card_classifier:Using mock card classifier (heuristic-based)
+INFO:vision.card_classifier:CardClassifier initialized on device: cpu
+INFO:vision.tracker:Tracker initialized (max_tracks=100)
+INFO:vision.fusion:FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+INFO:vision.state_machine:StateMachine initialized (max_players=9)
+INFO:vision.guardrails:Guardrails system initialized
+INFO:vision.table_calibration:TableCalibrator initialized with default layout: 6max_standard
+INFO:vision.pipeline:PokerVisionPipeline initialized
+INFO:__main__:Running stability test: 10 frames
+INFO:vision.table_calibration:Performing table calibration...
+INFO:vision.table_calibration:Initialized layout from template: 6max_standard
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+INFO:__main__:  capture_20260421_045943_458.png: stability=0.95, avg_fps=3.1
+INFO:__main__:Testing stability for: tests/screenshots/capture_20260421_050310_424.png
+INFO:__main__:Loaded image: (1056, 1936, 3)
+INFO:vision.yolo_detector:Using mock YOLO detector (no real inference)
+INFO:vision.yolo_detector:YOLODetector initialized on device: cpu
+INFO:vision.card_classifier:Using mock card classifier (heuristic-based)
+INFO:vision.card_classifier:CardClassifier initialized on device: cpu
+INFO:vision.tracker:Tracker initialized (max_tracks=100)
+INFO:vision.fusion:FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+INFO:vision.state_machine:StateMachine initialized (max_players=9)
+INFO:vision.guardrails:Guardrails system initialized
+INFO:vision.table_calibration:TableCalibrator initialized with default layout: 6max_standard
+INFO:vision.pipeline:PokerVisionPipeline initialized
+INFO:__main__:Running stability test: 10 frames
+INFO:vision.table_calibration:Performing table calibration...
+INFO:vision.table_calibration:Initialized layout from template: 6max_standard
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+INFO:__main__:  capture_20260421_050310_424.png: stability=0.95, avg_fps=5.0
+INFO:__main__:Testing stability for: tests/screenshots/capture_20260421_045717_655.png
+INFO:__main__:Loaded image: (1056, 1936, 3)
+INFO:vision.yolo_detector:Using mock YOLO detector (no real inference)
+INFO:vision.yolo_detector:YOLODetector initialized on device: cpu
+INFO:vision.card_classifier:Using mock card classifier (heuristic-based)
+INFO:vision.card_classifier:CardClassifier initialized on device: cpu
+INFO:vision.tracker:Tracker initialized (max_tracks=100)
+INFO:vision.fusion:FusionEngine initialized with weights: {'detection': 0.4, 'classification': 0.35, 'temporal': 0.25}
+INFO:vision.state_machine:StateMachine initialized (max_players=9)
+INFO:vision.guardrails:Guardrails system initialized
+INFO:vision.table_calibration:TableCalibrator initialized with default layout: 6max_standard
+INFO:vision.pipeline:PokerVisionPipeline initialized
+INFO:__main__:Running stability test: 10 frames
+INFO:vision.table_calibration:Performing table calibration...
+INFO:vision.table_calibration:Initialized layout from template: 6max_standard
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
+WARNING:vision.pipeline:Guardrails triggered rollback
+INFO:vision.state_machine:Rolled back 1 state(s)
