@@ -327,46 +327,178 @@ class ExpressoVision:
         win_x: int, win_y: int, win_w: int, win_h: int
     ) -> List[Tuple[int, int, int, int]]:
         """
-        Détecte les cartes communes (rectangles blancs) dans la zone de table.
-        Retourne liste de (x, y, w, h) triée par x croissant.
+        Détecte les cartes communes par template matching.
+        
+        Stratégie :
+          1. Génère des templates programmatiques de coins de carte (rectangle blanc avec bordure grise arrondie)
+          2. Applique cv2.matchTemplate avec TM_CCOEFF_NORMED sur la ROI
+          3. Filtre les détections par aspect ratio et solidity comme validation post-détection
+          4. Retourne liste de (x, y, w, h) triée par x croissant
+        
+        Templates scalés selon la fenêtre pour supporter 1280×720 à 2560×1440.
         """
-        # Zone d'intérêt : 15%–80% en hauteur, 10%–90% en largeur
+        # Zone d'intérêt : 15%–75% en hauteur, 10%–90% en largeur
         roi_x1 = win_x + int(win_w * 0.10)
         roi_x2 = win_x + int(win_w * 0.90)
         roi_y1 = win_y + int(win_h * 0.15)
         roi_y2 = win_y + int(win_h * 0.75)
 
         roi = img[roi_y1:roi_y2, roi_x1:roi_x2]
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        if roi.size == 0:
+            return []
 
-        # Seuillage sur les pixels très clairs (cartes blanches)
-        _, mask = cv2.threshold(gray, 190, 255, cv2.THRESH_BINARY)
-        kernel  = np.ones((4, 4), np.uint8)
-        mask    = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-        mask    = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  kernel)
-
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        cards = []
-        for cnt in contours:
-            bx, by, bw, bh = cv2.boundingRect(cnt)
-            area    = bw * bh
-            aspect  = bw / bh if bh > 0 else 0
-            solidity = cv2.contourArea(cnt) / area if area > 0 else 0
-
-            # Filtre : aspect carte ~0.55–0.80, solide, taille cohérente
-            if (0.45 < aspect < 0.88
-                    and 1500 < area < 40000
-                    and solidity > 0.72):
-                # Reconvertit en coordonnées image complète
-                cards.append((bx + roi_x1, by + roi_y1, bw, bh))
-
-        # Filtre les doublons proches (overlap > 60%)
-        cards = self._deduplicate_rects(cards, iou_thr=0.30)
-
-        # Trie par x, limite à 5 cartes
+        # ── 1. Génération de templates programmatiques ────────────────────────
+        # Référence : 1936×1056 → carte commune 103×154 px
+        # On génère deux tailles de référence puis on scale selon la fenêtre
+        ref_w, ref_h = 1936, 1056
+        scale_factor = min(win_w / ref_w, win_h / ref_h) * 1.0
+        
+        # Deux tailles de template pour couvrir différentes résolutions
+        template_sizes = [
+            (int(71 * scale_factor), int(100 * scale_factor)),   # Petite taille
+            (int(103 * scale_factor), int(154 * scale_factor)),  # Taille référence
+        ]
+        
+        all_detections: List[Tuple[int, int, int, int, float]] = []
+        
+        for tw, th in template_sizes:
+            if tw < 20 or th < 30:  # Templates trop petits
+                continue
+                
+            # Génère un template de coin de carte : rectangle blanc avec bordure grise arrondie
+            template = self._generate_card_corner_template(tw, th)
+            
+            # Convertit ROI en grayscale
+            roi_gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+            
+            # Template matching avec TM_CCOEFF_NORMED
+            if roi_gray.shape[0] < th or roi_gray.shape[1] < tw:
+                continue
+                
+            result = cv2.matchTemplate(roi_gray, template, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+            
+            # Seuil de confiance pour le template matching
+            threshold = 0.75
+            
+            # Trouve toutes les détections au-dessus du seuil
+            locations = np.where(result >= threshold)
+            
+            for pt in zip(*locations[::-1]):
+                bx, by = pt
+                bw, bh = tw, th
+                confidence = result[by, bx]
+                
+                # Vérifie aspect ratio cohérent avec une carte
+                aspect = bw / bh if bh > 0 else 0
+                if 0.50 < aspect < 0.85:
+                    all_detections.append((bx + roi_x1, by + roi_y1, bw, bh, confidence))
+        
+        # ── 2. Non-maximum suppression simple ─────────────────────────────────
+        # Trie par confiance décroissante
+        all_detections.sort(key=lambda d: d[4], reverse=True)
+        
+        cards: List[Tuple[int, int, int, int]] = []
+        for det in all_detections:
+            x, y, w, h, conf = det
+            rect = (x, y, w, h)
+            
+            # Vérifie overlap avec détections déjà gardées
+            is_duplicate = False
+            for kept in cards:
+                if self._iou(rect, kept) > 0.30:
+                    is_duplicate = True
+                    break
+            
+            if not is_duplicate:
+                # Validation post-détection : aspect + solidity
+                roi_card = roi[max(0, y-roi_y1):min(roi.shape[0], y-roi_y1+h), 
+                              max(0, x-roi_x1):min(roi.shape[1], x-roi_x1+w)]
+                if roi_card.size > 0:
+                    gray_card = cv2.cvtColor(roi_card, cv2.COLOR_BGR2GRAY) if len(roi_card.shape) == 3 else roi_card
+                    _, thresh = cv2.threshold(gray_card, 180, 255, cv2.THRESH_BINARY)
+                    cnts, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    
+                    if cnts:
+                        cnt = max(cnts, key=cv2.contourArea)
+                        area = bw * bh
+                        contour_area = cv2.contourArea(cnt)
+                        solidity = contour_area / area if area > 0 else 0
+                        
+                        # Filtre final : solidité suffisante
+                        if solidity > 0.65:
+                            cards.append((x, y, w, h))
+        
+        # ── 3. Tri par x et limite à 5 cartes ─────────────────────────────────
         cards.sort(key=lambda c: c[0])
         return cards[:5]
+
+
+    def _generate_card_corner_template(self, w: int, h: int) -> np.ndarray:
+        """
+        Génère un template programmatique de coin de carte.
+        
+        Le template représente un rectangle blanc avec une bordure grise arrondie,
+        similaire aux cartes Winamax Expresso.
+        
+        Args:
+            w: Largeur du template en pixels
+            h: Hauteur du template en pixels
+            
+        Returns:
+            Template grayscale (uint8) de forme (h, w)
+        """
+        # Crée un template grayscale
+        template = np.ones((h, w), dtype=np.uint8) * 255  # Fond blanc
+        
+        # Dessine une bordure grise arrondie
+        # Épaisseur de bordure : ~8% de la dimension
+        border_thickness = max(2, int(min(w, h) * 0.08))
+        
+        # Rayon des coins arrondis : ~10% de la dimension
+        corner_radius = max(3, int(min(w, h) * 0.10))
+        
+        # Dessine le rectangle avec coins arrondis (bordure grise ~#c0c0c0)
+        gray_color = 192  # Gris moyen
+        
+        # Copie le template pour manipulation
+        template_with_border = template.copy()
+        
+        # Dessine un rectangle rempli gris avec coins arrondis
+        pts = cv2.boxPoints(cv2.minAreaRect(
+            np.array([[border_thickness, border_thickness],
+                     [w - border_thickness, border_thickness],
+                     [w - border_thickness, h - border_thickness],
+                     [border_thickness, h - border_thickness]], dtype=np.float32)
+        ))
+        
+        # Alternative plus simple : dessiner rectangle avec coins arrondis manuellement
+        mask = np.zeros((h, w), dtype=np.uint8)
+        
+        # Rectangle intérieur (zone blanche)
+        inner_x1, inner_y1 = border_thickness, border_thickness
+        inner_x2, inner_y2 = w - border_thickness, h - border_thickness
+        
+        # Dessine la bordure externe (grise)
+        cv2.rectangle(template, (0, 0), (w-1, h-1), gray_color, -1)
+        
+        # Dessine l'intérieur blanc avec coins arrondis
+        center_white = (w // 2, h // 2)
+        axes_white = ((w - 2*border_thickness) // 2, (h - 2*border_thickness) // 2)
+        
+        # Crée un masque elliptique pour les coins arrondis
+        ellipse_mask = np.zeros((h, w), dtype=np.uint8)
+        cv2.ellipse(ellipse_mask, center_white, axes_white, 0, 0, 360, 255, -1)
+        
+        # Combine : fond gris + ellipse blanche = bordure arrondie
+        template = cv2.addWeighted(
+            np.ones((h, w), dtype=np.uint8) * gray_color, 1.0,
+            np.ones((h, w), dtype=np.uint8) * 255, 1.0,
+            0, dst=template
+        )
+        template[ellipse_mask == 0] = gray_color
+        
+        return template
 
     def _deduplicate_rects(self, rects, iou_thr=0.3):
         """Supprime les rectangles très proches/overlapping."""
@@ -468,24 +600,198 @@ class ExpressoVision:
 
     def _detect_suit_shape(self, card_img: np.ndarray, is_red: bool) -> str:
         """
-        Détecte l'enseigne par analyse des contours dans la zone du symbole.
-        Heuristique basée sur ratio hauteur/largeur et compacité.
+        Détecte l'enseigne par template matching sur 4 mini-sprites vectoriels (♠ ♥ ♦ ♣).
+        
+        Stratégie :
+          1. Génère 4 templates vectoriels de 32×32 pixels pour chaque enseigne
+          2. Pré-filtre par couleur (♥♦ rouges vs ♠♣ noires)
+          3. Applique cv2.matchTemplate et retourne le meilleur score
+        
+        Args:
+            card_img: Image complète de la carte
+            is_red: True si la couleur détectée est rouge (♥♦), False sinon (♠♣)
+            
+        Returns:
+            "h" (heart), "d" (diamond), "s" (spade), ou "c" (club)
         """
         h, w = card_img.shape[:2]
-        # Cible : symbole d'enseigne dans la zone 30%–70% en hauteur, 5%–55% en largeur
+        # Zone cible : symbole d'enseigne dans la zone 30%–70% en hauteur, 5%–55% en largeur
+        sym = card_img[int(h*0.30):int(h*0.70), int(w*0.05):int(w*0.50)]
+        if sym.size == 0:
+            return "h" if is_red else "s"
+
+        # ── 1. Génération des 4 templates vectoriels ─────────────────────────────
+        templates = self._generate_suit_templates(32)
+        
+        # Convertit la zone symbole en grayscale
+        sym_gray = cv2.cvtColor(sym, cv2.COLOR_BGR2GRAY) if len(sym.shape) == 3 else sym
+        
+        # Seuil pour isoler le symbole (noir sur fond blanc)
+        _, sym_thresh = cv2.threshold(sym_gray, 120, 255, cv2.THRESH_BINARY_INV)
+        
+        # ── 2. Template matching avec pré-filtre couleur ─────────────────────────
+        best_suit = "h" if is_red else "s"
+        best_score = -1.0
+        
+        # Sélectionne les enseignes candidates selon la couleur
+        candidate_suits = ["h", "d"] if is_red else ["s", "c"]
+        
+        for suit in candidate_suits:
+            if suit not in templates:
+                continue
+                
+            template = templates[suit]
+            
+            # Redimensionne le template pour matcher la taille du symbole détecté
+            # Estime la taille du symbole par contour detection
+            cnts, _ = cv2.findContours(sym_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if cnts:
+                cnt = max(cnts, key=cv2.contourArea)
+                bx, by, bw, bh_sym = cv2.boundingRect(cnt)
+                
+                if bw > 5 and bh_sym > 5:
+                    # Resize template to match detected symbol size
+                    tw, th = template.shape[1], template.shape[0]
+                    scale_x = bw / tw
+                    scale_y = bh_sym / th
+                    
+                    # Utilise une échelle moyenne
+                    avg_scale = (scale_x + scale_y) / 2
+                    new_tw = int(tw * avg_scale)
+                    new_th = int(th * avg_scale)
+                    
+                    if new_tw > 5 and new_th > 5 and new_tw <= sym.shape[1] and new_th <= sym.shape[0]:
+                        template_resized = cv2.resize(template, (new_tw, new_th), interpolation=cv2.INTER_AREA)
+                    else:
+                        template_resized = template
+                else:
+                    template_resized = template
+            else:
+                template_resized = template
+            
+            # Assure que le template tient dans la zone symbole
+            if template_resized.shape[0] > sym_thresh.shape[0]:
+                template_resized = cv2.resize(template_resized, 
+                                             (sym_thresh.shape[1], sym_thresh.shape[0]),
+                                             interpolation=cv2.INTER_AREA)
+            if template_resized.shape[1] > sym_thresh.shape[1]:
+                template_resized = cv2.resize(template_resized,
+                                             (template_resized.shape[1], sym_thresh.shape[0]),
+                                             interpolation=cv2.INTER_AREA)
+            
+            # Vérifie dimensions compatibles
+            if sym_thresh.shape[0] < template_resized.shape[0] or sym_thresh.shape[1] < template_resized.shape[1]:
+                continue
+            
+            # Template matching
+            result = cv2.matchTemplate(sym_thresh, template_resized, cv2.TM_CCOEFF_NORMED)
+            _, max_val, _, _ = cv2.minMaxLoc(result)
+            
+            if max_val > best_score:
+                best_score = max_val
+                best_suit = suit
+        
+        # Seuil minimum de confiance
+        if best_score < 0.3:
+            # Fallback à l'heuristique de forme
+            return self._detect_suit_shape_heuristic(card_img, is_red)
+        
+        return best_suit
+
+
+    def _generate_suit_templates(self, size: int = 32) -> Dict[str, np.ndarray]:
+        """
+        Génère 4 templates vectoriels pour les enseignes ♠ ♥ ♦ ♣.
+        
+        Args:
+            size: Taille des templates en pixels (carré)
+            
+        Returns:
+            Dictionnaire {"h": heart_template, "d": diamond_template, "s": spade_template, "c": club_template}
+        """
+        templates = {}
+        
+        # Crée un canvas blanc
+        def create_canvas():
+            return np.ones((size, size), dtype=np.uint8) * 255
+        
+        # Centre et rayon de référence
+        cx, cy = size // 2, size // 2
+        r = size // 2 - 2
+        
+        # ♥ Cœur (heart)
+        heart = create_canvas()
+        # Dessine un cœur via deux cercles + triangle
+        left_circle = (cx - r//3, cy - r//6)
+        right_circle = (cx + r//3, cy - r//6)
+        cv2.circle(heart, left_circle, r//2, 0, -1)
+        cv2.circle(heart, right_circle, r//2, 0, -1)
+        # Triangle pointant vers le bas
+        pts = np.array([
+            [cx - r//2, cy - r//3],
+            [cx + r//2, cy - r//3],
+            [cx, cy + r - 2]
+        ], dtype=np.int32)
+        cv2.fillPoly(heart, [pts], 0)
+        templates["h"] = heart
+        
+        # ♦ Carreau (diamond)
+        diamond = create_canvas()
+        diamond_pts = np.array([
+            [cx, cy - r + 1],
+            [cx + r - 1, cy],
+            [cx, cy + r - 1],
+            [cx - r + 1, cy]
+        ], dtype=np.int32)
+        cv2.fillPoly(diamond, [diamond_pts], 0)
+        templates["d"] = diamond
+        
+        # ♠ Pique (spade)
+        spade = create_canvas()
+        # Deux cercles en haut
+        cv2.circle(spade, (cx - r//3, cy - r//4), r//2, 0, -1)
+        cv2.circle(spade, (cx + r//3, cy - r//4), r//2, 0, -1)
+        # Triangle pointant vers le bas
+        spade_pts = np.array([
+            [cx - r//2, cy],
+            [cx + r//2, cy],
+            [cx, cy + r - 2]
+        ], dtype=np.int32)
+        cv2.fillPoly(spade, [spade_pts], 0)
+        # Petite tige en bas
+        cv2.rectangle(spade, (cx - 2, cy + r - 4), (cx + 2, cy + r), 0, -1)
+        templates["s"] = spade
+        
+        # ♣ Trèfle (club)
+        club = create_canvas()
+        # Trois cercles (trèfle)
+        cv2.circle(club, (cx, cy - r//3), r//2 - 1, 0, -1)  # Cercle haut
+        cv2.circle(club, (cx - r//2, cy + r//6), r//2 - 1, 0, -1)  # Cercle gauche
+        cv2.circle(club, (cx + r//2, cy + r//6), r//2 - 1, 0, -1)  # Cercle droit
+        # Tige
+        cv2.rectangle(club, (cx - 2, cy + r//3), (cx + 2, cy + r - 2), 0, -1)
+        templates["c"] = club
+        
+        return templates
+
+
+    def _detect_suit_shape_heuristic(self, card_img: np.ndarray, is_red: bool) -> str:
+        """
+        Fallback heuristique pour la détection d'enseigne (méthode originale).
+        Utilisée quand le template matching échoue.
+        """
+        h, w = card_img.shape[:2]
         sym = card_img[int(h*0.32):int(h*0.68), int(w*0.02):int(w*0.52)]
         if sym.size == 0:
             return "h" if is_red else "s"
 
         gray = cv2.cvtColor(sym, cv2.COLOR_BGR2GRAY)
-        # Isole le symbole foncé sur fond blanc
         _, mask = cv2.threshold(gray, 130, 255, cv2.THRESH_BINARY_INV)
         cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         if not cnts:
             return "h" if is_red else "s"
 
-        # Prend le plus grand contour
         cnt = max(cnts, key=cv2.contourArea)
         area = cv2.contourArea(cnt)
         if area < 20:
@@ -497,19 +803,15 @@ class ExpressoVision:
         aspect = bw / bh if bh > 0 else 1.0
 
         if is_red:
-            # Cœur (♥) : solide ~0.72–0.85, aspect ~0.95–1.15, forme concave en haut
-            # Carreau (♦) : solide ~0.80–0.95, aspect ~0.70–0.85, forme losange
             if aspect < 0.87 and solidity > 0.78:
-                return "d"   # ♦ losange
+                return "d"
             else:
-                return "h"   # ♥ cœur
+                return "h"
         else:
-            # Pique (♠) : solide ~0.55–0.72, aspect ~0.85–1.05
-            # Trèfle (♣) : solide ~0.55–0.72, aspect ~0.80–1.00, 3 lobes
             if solidity < 0.65:
-                return "c"   # ♣ trèfle (moins compact)
+                return "c"
             else:
-                return "s"   # ♠ pique
+                return "s"
 
     def _extract_hero_cards(
         self, img: np.ndarray, state: PokerVisionState,
@@ -517,43 +819,56 @@ class ExpressoVision:
         scale: float, board_x: int, board_y: int
     ) -> None:
         """
-        Localise et OCR les cartes du hero.
+        Localise et OCR les cartes du hero par ancrage relatif aux cartes communes.
+        
+        La position hero est calculée exclusivement depuis board_x0, board_y0, card_h, card_w et scale.
+        Formule : hero_cx = board_x + (n_cards / 2) * (card_w + REF_CARD_GAP) * scale
+        hero_y = board_y + card_h + int(scale * 110)
+        
         En Winamax Expresso, les cartes hero sont affichées dans une box
         au bas de la table, côte à côte dans un widget ~143px × 80px (ref 1936×1056).
         """
-        # Position adaptative : centrée horizontalement, sous les cartes communes
-        ref_hero_x = 848       # en coordonnées de référence
-        ref_hero_y = 706       # en coordonnées de référence
-        ref_hero_w = 143       # largeur totale (2 cartes)
-        ref_hero_h = 80        # hauteur
-
-        # Calcul depuis la fenêtre et l'échelle
-        # Ratio par rapport à la largeur de référence (1936px)
-        ref_img_w  = 1936
-        x_ratio    = board_x / ref_img_w
-
-        hero_cx = win_x + int(win_w * x_ratio)   # Centre horizontal approx
-        hero_w  = int(ref_hero_w * scale)
-        hero_h  = int(ref_hero_h * scale)
-        hero_x  = hero_cx - hero_w // 2
-        hero_y  = board_y + int(REF_CARD_H * scale) + int(110 * scale)
-
+        # Nombre de cartes communes détectées (ou centre fenêtre en preflop)
+        n_cards = len(state.board_cards)
+        if n_cards == 0:
+            n_cards = 3  # Valeur par défaut pour preflop
+        
+        # Calcul adaptatif du centre horizontal depuis les cartes communes
+        # Les cartes hero sont centrées sous le board
+        card_w = int(REF_CARD_W * scale)
+        card_h = int(REF_CARD_H * scale)
+        
+        # Centre horizontal : milieu du board
+        board_center_x = board_x + (n_cards * (card_w + int(REF_CARD_GAP * scale))) // 2
+        
+        # Largeur totale pour 2 cartes hero
+        ref_hero_w = 143  # largeur totale référence (2 cartes)
+        ref_hero_h = 80   # hauteur référence
+        hero_w = int(ref_hero_w * scale)
+        hero_h = int(ref_hero_h * scale)
+        
+        # Position hero : centrée sous le board
+        hero_cx = board_center_x
+        hero_x = hero_cx - hero_w // 2
+        hero_y = board_y + card_h + int(scale * 110)
+        
         # Clip aux limites image
         img_h, img_w = img.shape[:2]
         hero_x = max(0, min(hero_x, img_w - hero_w))
         hero_y = max(0, min(hero_y, img_h - hero_h))
-
+        
         if self.debug:
-            logger.debug("Hero cards zone: x=%d y=%d w=%d h=%d", hero_x, hero_y, hero_w, hero_h)
-
+            logger.debug("Hero cards zone: x=%d y=%d w=%d h=%d (scale=%.2f, n_cards=%d)",
+                        hero_x, hero_y, hero_w, hero_h, scale, n_cards)
+        
         hero_area = img[hero_y:hero_y + hero_h, hero_x:hero_x + hero_w]
         if hero_area.size == 0:
             return
-
+        
         # OCR de tout le bloc (donne "109" pour 10-9, "AA" pour A-A, etc.)
         raw_text = self._ocr_hero_block(hero_area)
         parsed   = self._parse_hero_block(raw_text)
-
+        
         # Si le bloc OCR échoue, essaie sur chaque demi-bloc
         if len(parsed) < 2:
             half = hero_w // 2
@@ -574,7 +889,7 @@ class ExpressoVision:
                     color = "red" if r > b + 20 else "black"
                     suit  = "h" if color == "red" else "s"
                     parsed.append(CardInfo(rank=rank, color=color, suit=suit))
-
+        
         state.hero_cards = parsed[:2]
 
     def _ocr_hero_block(self, hero_area: np.ndarray) -> str:
@@ -699,7 +1014,7 @@ class ExpressoVision:
         state.hand_desc = self._ocr_text_in(img, desc_y1, desc_y2, desc_x1, desc_x2)
 
         # ── Position (BTN/SB/BB) ───────────────────────────────────────
-        state.position = self._infer_position(img, win_x, win_y, win_w, win_h)
+        state.position = self._infer_position(img, state, win_x, win_y, win_w, win_h)
 
     # ── OCR helpers ─────────────────────────────────────────────────────────
 
@@ -774,41 +1089,84 @@ class ExpressoVision:
         return pytesseract.image_to_string(pil, config="--psm 11 -l fra+eng").strip()
 
     def _infer_position(
-        self, img: np.ndarray,
+        self, img: np.ndarray, state: PokerVisionState,
         win_x: int, win_y: int, win_w: int, win_h: int
     ) -> str:
         """
-        Détecte la position (BTN/SB/BB) en cherchant le bouton 'D' (dealer).
-        Le bouton D est généralement un disque jaune-orange.
+        Détecte la position (BTN/SB/BB) avec fallback depuis les blindes.
+        
+        Stratégie :
+          1. Cherche le bouton dealer orange ('D') par détection couleur
+          2. Si aucun bouton détecté, infère depuis state.blinds et state.to_call :
+             - to_call == 0 → probablement BB ou BTN (check disponible)
+             - to_call == blinds[0] → SB
+             - to_call == blinds[1] → BB forcé → UTG/MP
+          3. Retourne "BTN" par défaut si aucun indice disponible
+        
+        Args:
+            img: Image complète
+            state: État courant pour accéder à blinds et to_call
+            win_x, win_y, win_w, win_h: Coordonnées de la fenêtre
+            
+        Returns:
+            Position : "BTN", "SB", "BB", "CO", "MP", "UTG", ou "unknown"
         """
-        # Zone centrale (table)
+        # ── 1. Détection du bouton dealer orange ────────────────────────────────
         roi = self._safe_crop(
             img,
             win_y + int(win_h * 0.30), win_y + int(win_h * 0.75),
             win_x + int(win_w * 0.15), win_x + int(win_w * 0.85)
         )
-        if roi is None:
-            return "unknown"
+        if roi is not None:
+            hsv  = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+            mask = cv2.inRange(hsv, (15, 100, 150), (35, 255, 255))  # orange-jaune
+            cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Cherche la couleur orange/jaune du bouton dealer
-        hsv  = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, (15, 100, 150), (35, 255, 255))  # orange-jaune
-        cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        for cnt in cnts:
-            area = cv2.contourArea(cnt)
-            if 100 < area < 5000:
-                bx, by, bw, bh = cv2.boundingRect(cnt)
-                cx = bx + bw // 2
-                cx_norm = cx / roi.shape[1]
-                # BTN ≈ côté hero (centre-bas), SB/BB selon la position
-                if cx_norm > 0.55:
-                    return "BTN"
-                elif cx_norm < 0.35:
-                    return "BB"
+            for cnt in cnts:
+                area = cv2.contourArea(cnt)
+                if 100 < area < 5000:
+                    bx, by, bw, bh = cv2.boundingRect(cnt)
+                    cx = bx + bw // 2
+                    cx_norm = cx / roi.shape[1]
+                    # BTN ≈ côté hero (centre-bas), SB/BB selon la position
+                    if cx_norm > 0.55:
+                        return "BTN"
+                    elif cx_norm < 0.35:
+                        return "BB"
+                    else:
+                        return "SB"
+        
+        # ── 2. Fallback depuis les blindes et to_call ───────────────────────────
+        logger.debug("Bouton dealer non détecté, fallback depuis blindes/to_call")
+        
+        blinds = state.blinds if state.blinds else [5.0, 10.0]
+        to_call = state.to_call if state.to_call is not None else None
+        
+        if to_call is not None and to_call >= 0:
+            sb, bb = blinds[0], blinds[1]
+            
+            # to_call == 0 → check disponible → probablement BB ou BTN
+            if abs(to_call) < 0.01 or to_call == 0:
+                # Si on peut checker, on est BB (preflop) ou BTN (postflop)
+                if state.street == "preflop":
+                    return "BB"  # BB check option preflop si personne n'a raise
                 else:
-                    return "SB"
-        return "unknown"
+                    return "BTN"  # Bouton en position postflop
+            
+            # to_call == sb → joueur est SB (doit compléter)
+            elif abs(to_call - sb) < 0.01:
+                return "SB"
+            
+            # to_call == bb → joueur est BB forcé ou UTG/MP
+            elif abs(to_call - bb) < 0.01:
+                if state.street == "preflop":
+                    return "UTG"  # UTG doit caller BB preflop
+                else:
+                    return "BB"   # BB postflop
+        
+        # ── 3. Défaut : retourne "BTN" ──────────────────────────────────────────
+        logger.debug("Aucun indice disponible, retourne \"BTN\" par défaut")
+        return "BTN"
 
     # ── Utilitaires ─────────────────────────────────────────────────────────
 
