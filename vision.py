@@ -142,6 +142,15 @@ class ExpressoVision:
         return self.extract_from_array(img)
 
     def extract_from_array(self, img: np.ndarray) -> PokerVisionState:
+        """
+        Extrait l'état du jeu à partir d'un tableau numpy (image OpenCV).
+        
+        Args:
+            img: Image au format numpy array (BGR)
+            
+        Returns:
+            PokerVisionState contenant toutes les informations extraites
+        """
         state = PokerVisionState()
         h, w = img.shape[:2]
 
@@ -158,6 +167,8 @@ class ExpressoVision:
             self._extract_meta(img, state, win_x, win_y, win_w, win_h)
             self._extract_hero_cards(img, state, win_x, win_y, win_w, win_h, scale=1.0,
                                      board_x=win_x + win_w//2, board_y=win_y + win_h//2)
+            if self.debug:
+                self._save_debug_image(img, state, win_x, win_y, win_w, win_h, board_rects)
             return state
 
         # ── 3. Calcule le facteur d'échelle ─────────────────────────────
@@ -189,6 +200,11 @@ class ExpressoVision:
 
         logger.debug("State: board=%s hero=%s pot=%s stack=%s",
                      state.board_cards, state.hero_cards, state.pot, state.hero_stack)
+        
+        # ── 9. Mode debug visuel ─────────────────────────────────────────
+        if self.debug:
+            self._save_debug_image(img, state, win_x, win_y, win_w, win_h, board_rects)
+        
         return state
 
     # ── Private helpers ─────────────────────────────────────────────────────
@@ -209,40 +225,41 @@ class ExpressoVision:
 
         # ── STRATÉGIE 1 : Détection par couleur de la barre de titre ────────────────────
         # La barre de titre Winamax est bleu foncé (~#1a2a4a en hex, soit BGR: ~#4a2a1a)
-        # En HSV : Hue ~110-130°, Saturation ~80-150, Value ~40-90
-        logger.debug("Stratégie 1: Détection par couleur de la barre de titre")
+        # En HSV : Hue ~200-225°, Saturation ~50-255, Value ~30-160
+        logger.debug("_find_window strategy: title_bar_color")
         
         # Convertir en HSV pour une meilleure segmentation couleur
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         
         # Définir les bornes HSV pour le bleu foncé Winamax
-        # Ajustement: le bleu foncé a un hue autour de 115-125, saturation moyenne, valeur basse
-        lower_blue = np.array([105, 60, 30], dtype=np.uint8)
-        upper_blue = np.array([130, 180, 100], dtype=np.uint8)
+        # Plage spécifiée : [200–225, 50–255, 30–160]
+        lower_blue = np.array([200, 50, 30], dtype=np.uint8)
+        upper_blue = np.array([225, 255, 160], dtype=np.uint8)
         
         mask_title = cv2.inRange(hsv, lower_blue, upper_blue)
         
-        # Chercher une bande horizontale en haut de l'image (dans les 10% supérieurs)
-        top_band_height = max(int(h * 0.05), 20)  # minimum 20px
-        top_band_height = min(top_band_height, int(h * 0.15))  # maximum 15%
+        # Chercher une bande horizontale continue en haut de l'image (dans les 8% supérieurs)
+        top_band_height = int(h * 0.08)
         top_mask = mask_title[:top_band_height, :]
         
         # Projection horizontale pour trouver la bande continue
         horizontal_proj = cv2.reduce(top_mask, 1, cv2.REDUCE_SUM, dtype=cv2.CV_32S).flatten()
         
-        # Trouver les régions où la projection est significative
+        # Trouver les régions où la projection est significative (au moins 60% de la largeur)
         title_y_start = None
         title_y_end = None
+        min_width = int(w * 0.60)
+        
         for y in range(top_mask.shape[0]):
-            if int(horizontal_proj[y]) > w * 20:  # Au moins 20 pixels bleus sur la ligne
+            if int(horizontal_proj[y]) > min_width:
                 if title_y_start is None:
                     title_y_start = y
                 title_y_end = y
         
         if title_y_start is not None and title_y_end is not None:
-            # Vérifier que la hauteur est cohérente avec une barre de titre (20-40px typiquement)
+            # Vérifier que la hauteur est cohérente avec une barre de titre (20-45px typiquement)
             title_height = title_y_end - title_y_start + 1
-            if 15 <= title_height <= 60:  # Tolérance large pour différentes résolutions
+            if 20 <= title_height <= 45:
                 # Trouver les bords gauche/droit par projection verticale sur la bande détectée
                 title_band = top_mask[title_y_start:title_y_end+1, :]
                 vertical_proj = cv2.reduce(title_band, 0, cv2.REDUCE_SUM, dtype=cv2.CV_32S).flatten()
@@ -250,7 +267,7 @@ class ExpressoVision:
                 # Trouver le début et la fin de la barre (où il y a suffisamment de pixels)
                 title_x_start = None
                 title_x_end = None
-                threshold = title_height * 5  # Au moins 5 lignes de pixels bleus
+                threshold = title_height * 3  # Au moins 3 lignes de pixels bleus
                 
                 for x in range(vertical_proj.shape[0]):
                     if int(vertical_proj[x]) >= threshold:
@@ -259,10 +276,6 @@ class ExpressoVision:
                         title_x_end = x
                 
                 if title_x_start is not None and title_x_end is not None:
-                    # Raffiner les bords avec un peu de marge
-                    title_x_start = max(0, title_x_start - 5)
-                    title_x_end = min(w, title_x_end + 5)
-                    
                     window_w = title_x_end - title_x_start
                     window_h = h - title_y_start
                     
@@ -272,54 +285,54 @@ class ExpressoVision:
                     )
                     return (title_x_start, title_y_start, window_w, window_h)
         
-        logger.debug("Stratégie 1 échouée: barre de titre non détectée par couleur")
+        logger.debug("_find_window strategy: title_bar_color FAILED")
 
         # ── STRATÉGIE 2 : Détection du fond de table (tapis vert/feutré) ───────────────
         # Le tapis Winamax Expresso a une teinte verte caractéristique
-        # En HSV : Hue ~50-70° (vert), Saturation ~40-120, Value ~60-180
-        logger.debug("Stratégie 2: Détection par couleur du tapis de table")
+        # En HSV : Hue ~55-85°, Saturation ~30-160, Value ~25-110
+        logger.debug("_find_window strategy: table_green_felt")
         
         # Bornes HSV pour le vert feutré du tapis
-        lower_green = np.array([45, 30, 50], dtype=np.uint8)
-        upper_green = np.array([75, 150, 200], dtype=np.uint8)
+        lower_green = np.array([55, 30, 25], dtype=np.uint8)
+        upper_green = np.array([85, 160, 110], dtype=np.uint8)
         
         mask_table = cv2.inRange(hsv, lower_green, upper_green)
         
+        # Restreindre à la zone centrale (20%-85% en hauteur) pour éviter le bruit
+        roi_y1 = int(h * 0.2)
+        roi_y2 = int(h * 0.85)
+        mask_table_roi = mask_table[roi_y1:roi_y2, :]
+        
         # Appliquer un nettoyage morphologique pour connecter les régions
         kernel = np.ones((5, 5), np.uint8)
-        mask_table = cv2.morphologyEx(mask_table, cv2.MORPH_CLOSE, kernel)
-        mask_table = cv2.morphologyEx(mask_table, cv2.MORPH_OPEN, kernel)
+        mask_table_roi = cv2.morphologyEx(mask_table_roi, cv2.MORPH_CLOSE, kernel)
+        mask_table_roi = cv2.morphologyEx(mask_table_roi, cv2.MORPH_OPEN, kernel)
         
-        # Trouver les contours pour identifier la plus grande zone rectangulaire
-        contours, _ = cv2.findContours(mask_table, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Trouver les contours pour identifier la plus grande zone connexe
+        contours, _ = cv2.findContours(mask_table_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
         if contours:
             # Trouver le plus grand contour par aire
             largest_contour = max(contours, key=cv2.contourArea)
             area = cv2.contourArea(largest_contour)
             
-            # Seuillage: doit représenter au moins 15% de l'image totale
-            min_area = w * h * 0.15
+            # Seuillage: doit représenter au moins 5% de l'image totale
+            min_area = w * h * 0.05
             if area >= min_area:
                 # Approximer le contour par un rectangle englobant
-                x, y, table_w, table_h = cv2.boundingRect(largest_contour)
+                x, y_rel, table_w, table_h = cv2.boundingRect(largest_contour)
+                y = roi_y1 + y_rel  # Revenir aux coordonnées originales
                 
-                # Vérifier que les dimensions sont cohérentes avec une table de poker
-                # La table devrait occuper une portion significative de l'image
-                aspect_ratio = table_w / table_h if table_h > 0 else 0
-                
-                # Aspect ratio typique d'une table de poker: 1.2 à 2.5
-                if 1.0 <= aspect_ratio <= 3.0:
-                    logger.debug(
-                        "Tapis de table détecté: x=%d y=%d w=%d h=%d (aire=%.0f, aspect=%.2f)",
-                        x, y, table_w, table_h, area, aspect_ratio
-                    )
-                    return (x, y, table_w, table_h)
+                logger.debug(
+                    "Tapis de table détecté: x=%d y=%d w=%d h=%d (aire=%.0f)",
+                    x, y, table_w, table_h, area
+                )
+                return (x, y, table_w, table_h)
         
-        logger.debug("Stratégie 2 échouée: tapis de table non détecté")
+        logger.debug("_find_window strategy: table_green_felt FAILED")
 
         # ── STRATÉGIE 3 : Fallback → image entière ─────────────────────────────────────
-        logger.debug("Stratégie 3 (fallback): Retour de l'image entière")
+        logger.debug("_find_window strategy: full_image_fallback")
         return (0, 0, w, h)
 
     def _find_board_cards(
@@ -821,36 +834,45 @@ class ExpressoVision:
         """
         Localise et OCR les cartes du hero par ancrage relatif aux cartes communes.
         
-        La position hero est calculée exclusivement depuis board_x0, board_y0, card_h, card_w et scale.
-        Formule : hero_cx = board_x + (n_cards / 2) * (card_w + REF_CARD_GAP) * scale
-        hero_y = board_y + card_h + int(scale * 110)
+        La position hero est calculée exclusivement depuis board_x, board_y, card_h, card_w et scale.
+        Formule : hero_cx = board_x + (n_board * (card_w + REF_CARD_GAP * scale)) // 2
+        En preflop (n_board == 0) : hero_cx = win_x + win_w // 2
         
-        En Winamax Expresso, les cartes hero sont affichées dans une box
-        au bas de la table, côte à côte dans un widget ~143px × 80px (ref 1936×1056).
+        Args:
+            img: Image complète
+            state: État courant (sera modifié avec hero_cards)
+            win_x, win_y, win_w, win_h: Coordonnées de la fenêtre
+            scale: Facteur d'échelle
+            board_x, board_y: Position de la première carte commune
         """
-        # Nombre de cartes communes détectées (ou centre fenêtre en preflop)
-        n_cards = len(state.board_cards)
-        if n_cards == 0:
-            n_cards = 3  # Valeur par défaut pour preflop
+        # Nombre de cartes communes détectées (ou 0 en preflop)
+        n_board = len(state.board_cards)
         
-        # Calcul adaptatif du centre horizontal depuis les cartes communes
-        # Les cartes hero sont centrées sous le board
+        # Dimensions des cartes à l'échelle courante
         card_w = int(REF_CARD_W * scale)
         card_h = int(REF_CARD_H * scale)
         
-        # Centre horizontal : milieu du board
-        board_center_x = board_x + (n_cards * (card_w + int(REF_CARD_GAP * scale))) // 2
+        # Calcul du centre horizontal du board
+        if n_board > 0:
+            board_center_x = board_x + (n_board * (card_w + int(REF_CARD_GAP * scale))) // 2
+        else:
+            # Preflop : centre de la fenêtre
+            board_center_x = win_x + win_w // 2
         
-        # Largeur totale pour 2 cartes hero
+        # Les cartes hero sont centrées horizontalement comme le board
+        hero_cx = board_center_x
+        
+        # Largeur totale pour 2 cartes hero (référence Winamax Expresso)
         ref_hero_w = 143  # largeur totale référence (2 cartes)
         ref_hero_h = 80   # hauteur référence
         hero_w = int(ref_hero_w * scale)
         hero_h = int(ref_hero_h * scale)
         
-        # Position hero : centrée sous le board
-        hero_cx = board_center_x
-        hero_x = hero_cx - hero_w // 2
+        # Position Y : sous le board avec un offset
         hero_y = board_y + card_h + int(scale * 110)
+        
+        # Centre horizontal des cartes hero
+        hero_x = hero_cx - hero_w // 2
         
         # Clip aux limites image
         img_h, img_w = img.shape[:2]
@@ -858,8 +880,8 @@ class ExpressoVision:
         hero_y = max(0, min(hero_y, img_h - hero_h))
         
         if self.debug:
-            logger.debug("Hero cards zone: x=%d y=%d w=%d h=%d (scale=%.2f, n_cards=%d)",
-                        hero_x, hero_y, hero_w, hero_h, scale, n_cards)
+            logger.debug("Hero cards zone: x=%d y=%d w=%d h=%d (scale=%.2f, n_board=%d)",
+                        hero_x, hero_y, hero_w, hero_h, scale, n_board)
         
         hero_area = img[hero_y:hero_y + hero_h, hero_x:hero_x + hero_w]
         if hero_area.size == 0:
@@ -1142,27 +1164,14 @@ class ExpressoVision:
         blinds = state.blinds if state.blinds else [5.0, 10.0]
         to_call = state.to_call if state.to_call is not None else None
         
-        if to_call is not None and to_call >= 0:
-            sb, bb = blinds[0], blinds[1]
-            
-            # to_call == 0 → check disponible → probablement BB ou BTN
-            if abs(to_call) < 0.01 or to_call == 0:
-                # Si on peut checker, on est BB (preflop) ou BTN (postflop)
-                if state.street == "preflop":
-                    return "BB"  # BB check option preflop si personne n'a raise
-                else:
-                    return "BTN"  # Bouton en position postflop
-            
-            # to_call == sb → joueur est SB (doit compléter)
-            elif abs(to_call - sb) < 0.01:
+        # Fallback depuis les actions déjà extraites
+        if hasattr(state, 'actions') and "check" in state.actions and to_call is not None and to_call == 0:
+            return "BB"
+        
+        if to_call is not None and blinds and len(blinds) >= 1:
+            sb = blinds[0]
+            if abs(to_call - sb) < 0.01:
                 return "SB"
-            
-            # to_call == bb → joueur est BB forcé ou UTG/MP
-            elif abs(to_call - bb) < 0.01:
-                if state.street == "preflop":
-                    return "UTG"  # UTG doit caller BB preflop
-                else:
-                    return "BB"   # BB postflop
         
         # ── 3. Défaut : retourne "BTN" ──────────────────────────────────────────
         logger.debug("Aucun indice disponible, retourne \"BTN\" par défaut")
@@ -1189,6 +1198,96 @@ class ExpressoVision:
                           interpolation=cv2.INTER_LANCZOS4)
         pil  = Image.fromarray(cv2.cvtColor(big, cv2.COLOR_BGR2RGB))
         return ImageEnhance.Contrast(pil).enhance(contrast)
+
+    def _save_debug_image(
+        self, img: np.ndarray, state: PokerVisionState,
+        win_x: int, win_y: int, win_w: int, win_h: int,
+        board_rects: List[Tuple[int, int, int, int]]
+    ) -> None:
+        """
+        Sauvegarde une image annotée pour le débogage dans ./logs/.
+        
+        Annotations :
+          - Rectangles verts sur les cartes communes détectées
+          - Rectangle bleu sur la zone hero cards
+          - Rectangle orange sur la zone pot
+          - Rectangle magenta sur la zone stacks
+          - Texte blanc avec résultat OCR sur chaque zone
+        
+        Args:
+            img: Image originale
+            state: État extrait
+            win_x, win_y, win_w, win_h: Coordonnées de la fenêtre Winamax
+            board_rects: Rectangles des cartes communes [(x, y, w, h)]
+        """
+        debug_img = img.copy()
+        
+        # Calculer l'échelle si disponible
+        scale = state._scale if hasattr(state, '_scale') and state._scale > 0 else 1.0
+        board_x0, board_y0 = state._board_origin if hasattr(state, '_board_origin') else (win_x, win_y)
+        card_h = int(REF_CARD_H * scale)
+        card_w = int(REF_CARD_W * scale)
+        
+        # ── Rectangles verts sur les cartes communes ────────────────────────
+        for i, (x, y, w, h) in enumerate(board_rects):
+            cv2.rectangle(debug_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            # Texte OCR
+            if i < len(state.board_cards):
+                card = state.board_cards[i]
+                text = f"{card.rank}{card.suit}" if card.rank else "??"
+                cv2.putText(debug_img, text, (x + 5, y + 20),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        
+        # ── Rectangle bleu sur la zone hero cards ───────────────────────────
+        n_board = len(board_rects) if board_rects else 0
+        if n_board > 0:
+            board_center_x = board_x0 + (n_board * (card_w + int(REF_CARD_GAP * scale))) // 2
+        else:
+            board_center_x = win_x + win_w // 2
+        
+        ref_hero_w = int(143 * scale)
+        ref_hero_h = int(80 * scale)
+        hero_y = board_y0 + card_h + int(scale * 110)
+        hero_x = board_center_x - ref_hero_w // 2
+        
+        cv2.rectangle(debug_img, (hero_x, hero_y), (hero_x + ref_hero_w, hero_y + ref_hero_h),
+                     (255, 0, 0), 2)
+        # Texte hero cards
+        hero_text = " ".join(str(c) for c in state.hero_cards[:2]) if state.hero_cards else "??"
+        cv2.putText(debug_img, f"Hero: {hero_text}", (hero_x + 5, hero_y + 20),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        
+        # ── Rectangle orange sur la zone pot ────────────────────────────────
+        pot_y1 = board_y0 + card_h + int(10 * scale)
+        pot_y2 = board_y0 + card_h + int(70 * scale)
+        pot_x1 = win_x + int(win_w * 0.38)
+        pot_x2 = win_x + int(win_w * 0.65)
+        cv2.rectangle(debug_img, (pot_x1, pot_y1), (pot_x2, pot_y2), (0, 165, 255), 2)
+        pot_text = f"Pot: {state.pot:.2f}" if state.pot else "Pot: ??"
+        cv2.putText(debug_img, pot_text, (pot_x1 + 5, pot_y1 + 20),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        
+        # ── Rectangle magenta sur la zone stacks ────────────────────────────
+        hero_st_y1 = board_y0 + int(450 * scale)
+        hero_st_y2 = board_y0 + int(530 * scale)
+        hero_st_x1 = win_x + int(win_w * 0.38)
+        hero_st_x2 = win_x + int(win_w * 0.62)
+        cv2.rectangle(debug_img, (hero_st_x1, hero_st_y1), (hero_st_x2, hero_st_y2),
+                     (255, 0, 255), 2)
+        stack_text = f"Stack: {state.hero_stack:.2f}" if state.hero_stack else "Stack: ??"
+        cv2.putText(debug_img, stack_text, (hero_st_x1 + 5, hero_st_y1 + 20),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        
+        # ── Sauvegarde dans ./logs/ ─────────────────────────────────────────
+        import os
+        import time
+        logs_dir = "./logs"
+        os.makedirs(logs_dir, exist_ok=True)
+        timestamp = int(time.time())
+        filename = f"debug_{timestamp}.png"
+        filepath = os.path.join(logs_dir, filename)
+        cv2.imwrite(filepath, debug_img)
+        logger.debug("Image de débogage sauvegardée: %s", filepath)
 
 
 # ── Module-level convenience ─────────────────────────────────────────────────

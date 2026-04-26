@@ -1,1 +1,9 @@
-Nothing needs to be added to .gitignore since only a Python source file (`vision.py`) was modified and there are no build artifacts, dependencies, or temporary files in the changes.
+```
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Image logs
+logs/
+```
