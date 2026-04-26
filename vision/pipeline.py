@@ -8,6 +8,7 @@ Production-grade async pipeline integrating all components:
 - Multi-source fusion
 - State machine with validation
 - Guardrails for error prevention
+- Dynamic table calibration
 
 Features:
 - Real-time processing (>= 20 FPS target)
@@ -15,6 +16,8 @@ Features:
 - Frame skipping under load
 - Comprehensive logging and metrics
 - Confidence visualization
+- Resolution-independent coordinate system
+- Auto-recalibration support
 """
 
 from __future__ import annotations
@@ -37,6 +40,7 @@ from .tracker import Tracker, TrackedObject
 from .fusion import FusionEngine, FusedDetection
 from .state_machine import StateMachine, PokerTableState, Street
 from .guardrails import Guardrails, ValidationResult, ValidationStatus
+from .table_calibration import TableCalibrator, TableLayout
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +76,11 @@ class PipelineConfig:
     
     # Guardrails
     enable_guardrails: bool = True
+    
+    # Table calibration
+    enable_calibration: bool = True
+    default_layout: str = "6max_standard"
+    calibration_interval: int = 300  # Frames between recalibrations
     
     # Debug
     debug_mode: bool = False
@@ -191,11 +200,18 @@ class PokerVisionPipeline:
             enable_logging=self.config.debug_mode,
         )
         
+        # Table calibration (NEW)
+        self.calibrator = TableCalibrator(
+            default_layout=self.config.default_layout,
+            enable_auto_detect=self.config.enable_calibration,
+        )
+        
         # State
         self.is_running = False
         self.frame_number = 0
         self.current_state = PokerTableState()
         self.previous_state: Optional[PokerTableState] = None
+        self.current_image_shape: Optional[Tuple[int, int]] = None
         
         # Async processing
         self.executor: Optional[ThreadPoolExecutor] = None
@@ -233,9 +249,30 @@ class PokerVisionPipeline:
         self.frame_number += 1
         
         try:
+            # Store image shape for calibration
+            self.current_image_shape = image.shape[:2]
+            
+            # ── Stage 0: Table Calibration (if enabled) ──────────────────
+            if self.config.enable_calibration:
+                # Update calibration periodically or on first frame
+                if self.frame_number == 1 or self.frame_number % self.config.calibration_interval == 0:
+                    self.calibrator.calibrate_from_detections(
+                        detections=[],  # Will be populated below
+                        image_shape=image.shape[:2],
+                        force=(self.frame_number == 1),
+                    )
+            
             # ── Stage 1: Detection ──────────────────────────────────────
             det_start = time.time()
             detections = self.detector.detect(image)
+            
+            # Update calibration with actual detections
+            if self.config.enable_calibration and self.frame_number % self.config.calibration_interval == 0:
+                self.calibrator.calibrate_from_detections(
+                    detections=detections,
+                    image_shape=image.shape[:2],
+                    force=False,
+                )
             
             # Set timestamps on detections
             for det in detections:
@@ -419,6 +456,7 @@ class PokerVisionPipeline:
             "fusion": self.fusion.get_stats(),
             "state_machine": self.state_machine.get_stats(),
             "guardrails": self.guardrails.get_stats(),
+            "calibration": self.calibrator.get_stats(),
         }
     
     def reset(self) -> None:
@@ -426,9 +464,20 @@ class PokerVisionPipeline:
         self.tracker.reset()
         self.state_machine.reset()
         self.guardrails.reset()
+        self.calibrator.reset()
         self.frame_number = 0
         self.metrics = PipelineMetrics()
         logger.info("Pipeline reset")
+    
+    def get_table_layout(self) -> Optional[TableLayout]:
+        """Get current table layout from calibrator."""
+        return self.calibrator.current_layout
+    
+    def force_recalibrate(self) -> TableLayout:
+        """Force immediate table recalibration."""
+        if self.current_image_shape:
+            return self.calibrator.initialize_from_template(self.config.default_layout)
+        raise RuntimeError("No image processed yet, cannot calibrate")
     
     def visualize(
         self,
@@ -478,6 +527,33 @@ class PokerVisionPipeline:
             cv2.putText(vis, label, (x1, y1 - 5),
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
         
+        # Draw table layout regions (if calibrated)
+        if self.calibrator.current_layout:
+            layout = self.calibrator.current_layout
+            h, w = vis.shape[:2]
+            
+            # Draw table boundary
+            tx1, ty1, tx2, ty2 = layout.table_bbox.to_pixel_coords(w, h)
+            cv2.rectangle(vis, (tx1, ty1), (tx2, ty2), (255, 0, 255), 2)
+            cv2.putText(vis, "TABLE", (tx1, ty1 - 5),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1)
+            
+            # Draw board region
+            bx1, by1, bx2, by2 = layout.board_region.to_pixel_coords(w, h)
+            cv2.rectangle(vis, (bx1, by1), (bx2, by2), (0, 255, 255), 2)
+            
+            # Draw pot region
+            px1, py1, px2, py2 = layout.pot_region.to_pixel_coords(w, h)
+            cv2.rectangle(vis, (px1, py1), (px2, py2), (255, 255, 0), 2)
+            
+            # Draw seat regions
+            for seat in layout.seats:
+                sx1, sy1, sx2, sy2 = seat.region.to_pixel_coords(w, h)
+                color_seat = (128, 128, 128) if not seat.is_active else (255, 128, 0)
+                cv2.rectangle(vis, (sx1, sy1), (sx2, sy2), color_seat, 1)
+                cv2.putText(vis, seat.position.name, (sx1, sy1 - 5),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.4, color_seat, 1)
+        
         # Draw state info
         info_y = 30
         cv2.putText(vis, f"Street: {state.street.value}", (10, info_y),
@@ -488,6 +564,16 @@ class PokerVisionPipeline:
         info_y += 25
         cv2.putText(vis, f"FPS: {self.metrics.current_fps:.1f}", (10, info_y),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        
+        # Draw calibration info
+        if self.calibrator.current_layout:
+            calib_stats = self.calibrator.get_stats()
+            info_y += 25
+            cv2.putText(vis, f"Layout v{calib_stats['layout_version']}", (10, info_y),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 2)
+            info_y += 20
+            cv2.putText(vis, f"Calib conf: {calib_stats['current_confidence']:.2f}", (10, info_y),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 2)
         
         # Draw board cards
         if state.board_cards:

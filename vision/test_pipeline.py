@@ -23,6 +23,62 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def test_table_calibration():
+    """Test table calibration module."""
+    print("\n" + "="*60)
+    print("Testing Table Calibration")
+    print("="*60)
+    
+    from .table_calibration import (
+        TableCalibrator, TableLayout, NormalizedBox, SeatPosition
+    )
+    
+    # Test 1: Initialize calibrator
+    calibrator = TableCalibrator(default_layout='6max_standard')
+    print("  ✓ Calibrator initialized")
+    
+    # Test 2: Initialize from template
+    layout = calibrator.initialize_from_template('6max_standard')
+    print(f"  ✓ Layout initialized: {len(layout.seats)} seats")
+    
+    # Test 3: Check normalized coordinates
+    assert 0 <= layout.table_bbox.x1 <= 1
+    assert 0 <= layout.table_bbox.y1 <= 1
+    assert 0 <= layout.table_bbox.x2 <= 1
+    assert 0 <= layout.table_bbox.y2 <= 1
+    print(f"  ✓ Normalized coordinates valid")
+    
+    # Test 4: Test pixel conversion
+    px = layout.table_bbox.to_pixel_coords(1920, 1080)
+    assert px[0] < px[2] and px[1] < px[3]
+    print(f"  ✓ Pixel conversion works: {px}")
+    
+    # Test 5: Test adaptive ROI
+    roi = calibrator.get_roi_for_class('card', 1920, 1080)
+    print(f"  ✓ Adaptive ROI for 'card': {roi}")
+    
+    # Test 6: Test point-to-region mapping
+    region = layout.point_to_region(0.5, 0.45)
+    print(f"  ✓ Point (0.5, 0.45) -> {region}")
+    
+    # Test 7: Test layout serialization
+    layout_dict = layout.to_dict()
+    assert 'table_bbox' in layout_dict
+    assert 'seats' in layout_dict
+    print(f"  ✓ Layout serialization works")
+    
+    # Test 8: Test 9max layout
+    layout_9max = calibrator.initialize_from_template('9max_standard')
+    print(f"  ✓ 9max layout: {len(layout_9max.seats)} seats")
+    
+    # Test 9: Get stats
+    stats = calibrator.get_stats()
+    print(f"  ✓ Calibration stats: {stats}")
+    
+    print("  ✓ Table Calibration tests passed")
+    return True
+
+
 def test_yolo_detector():
     """Test YOLO detector module."""
     print("\n" + "="*60)
@@ -456,6 +512,7 @@ def run_all_tests():
     print("="*70)
     
     tests = [
+        ("Table Calibration", test_table_calibration),
         ("YOLO Detector", test_yolo_detector),
         ("Card Classifier", test_card_classifier),
         ("Tracker", test_tracker),
